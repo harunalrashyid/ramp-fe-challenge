@@ -1,5 +1,5 @@
 import Downshift from "downshift"
-import { useCallback, useState } from "react"
+import { useCallback, useState, useEffect, useRef } from "react"
 import classNames from "classnames"
 import { DropdownPosition, GetDropdownPositionFn, InputSelectOnChange, InputSelectProps } from "./types"
 
@@ -18,6 +18,9 @@ export function InputSelect<TItem>({
     left: 0,
   })
 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const inputRef = useRef<HTMLDivElement>(null)
+
   const onChange = useCallback<InputSelectOnChange<TItem>>(
     (selectedItem) => {
       if (selectedItem === null) {
@@ -30,10 +33,30 @@ export function InputSelect<TItem>({
     [consumerOnChange]
   )
 
+  const onStateChange = useCallback((changes: any) => {
+    if (changes.hasOwnProperty('isOpen')) {
+      setIsDropdownOpen(changes.isOpen)
+    }
+  }, [])
+
+  useEffect(() => {
+    const onScrolled = () => {
+      if (inputRef?.current && isDropdownOpen) {
+        const currentPosition = getDropdownPosition(inputRef.current)
+        setDropdownPosition(currentPosition)
+      }
+    }
+
+    window.addEventListener('scroll', onScrolled)
+
+    return () => window.removeEventListener('scroll', onScrolled)
+  }, [isDropdownOpen])
+
   return (
     <Downshift<TItem>
       id="RampSelect"
       onChange={onChange}
+      onStateChange={onStateChange}
       selectedItem={selectedValue}
       itemToString={(item) => (item ? parseItem(item).label : "")}
     >
@@ -57,6 +80,7 @@ export function InputSelect<TItem>({
             </label>
             <div className="RampBreak--xs" />
             <div
+              ref={inputRef}
               className="RampInputSelect--input"
               onClick={(event) => {
                 setDropdownPosition(getDropdownPosition(event.target))
@@ -120,9 +144,9 @@ export function InputSelect<TItem>({
 const getDropdownPosition: GetDropdownPositionFn = (target) => {
   if (target instanceof Element) {
     const { top, left } = target.getBoundingClientRect()
-    const { scrollY } = window
+    // const { scrollY } = window
     return {
-      top: scrollY + top + 63,
+      top: top + 63,
       left,
     }
   }
