@@ -61,7 +61,8 @@ export function App() {
             label: `${item.firstName} ${item.lastName}`,
           })}
           onChange={async (newValue) => {
-            if (newValue === null) {
+            if (newValue === null || !newValue.id) {
+              await loadAllTransactions()
               return
             }
 
@@ -75,7 +76,7 @@ export function App() {
           <Transactions transactions={transactions} />
 
           {transactions !== null && (
-            <button
+            <button 
               className="RampButton"
               disabled={paginatedTransactionsUtils.loading}
               onClick={async () => {
