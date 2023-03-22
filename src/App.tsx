@@ -51,7 +51,7 @@ export function App() {
         <hr className="RampBreak--l" />
 
         <InputSelect<Employee>
-          isLoading={isLoading}
+          isLoading={employeeUtils.loading}
           defaultValue={EMPTY_EMPLOYEE}
           items={employees === null ? [] : [EMPTY_EMPLOYEE, ...employees]}
           label="Filter by employee"
@@ -59,6 +59,7 @@ export function App() {
           parseItem={(item) => ({
             value: item.id,
             label: `${item.firstName} ${item.lastName}`,
+            disabled: isLoading
           })}
           onChange={async (newValue) => {
             if (newValue === null || !newValue.id) {
